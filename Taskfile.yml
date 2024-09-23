@@ -1,0 +1,12 @@
+version: "3"
+
+silent: true
+
+tasks:
+  default:
+    desc: list tasks
+    cmd: task --list-all
+
+  test:
+    desc: unit testing
+    cmd: go test -count=1 -cover {{.CLI_ARGS}}
