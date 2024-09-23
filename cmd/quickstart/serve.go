@@ -10,20 +10,35 @@ import (
 	"time"
 
 	"go.tmp/quickstart/internal/net/http"
+	"go.tmp/quickstart/internal/time/rate"
 	"golang.org/x/sync/errgroup"
+)
+
+// Limits as recommended by Cloudflare
+// source: https://developers.cloudflare.com/workers/platform/limits/
+const (
+	maxHeaderBytes = 32 * (1 << 10)
 )
 
 type serve struct {
 	addr string
-	// tls
+	rate rate.Rate
+	// todo: tls
 }
 
-func (s *serve) parse(args []string, _ func(string) string) error {
+func (c *serve) parse(args []string, _ func(string) string) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
-	fs.StringVar(&s.addr, "addr", "0.0.0.0:0", "http listening port")
+	fs.StringVar(&c.addr, "addr", "0.0.0.0:0", "http listening port")
+	// Cloudflare sets a 1000/min rate limit default
+	fs.TextVar(&c.rate, "rate", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
+	// throttle safe requests and limit non-safe requests
 	err := fs.Parse(args)
 	if err != nil {
 		return err
+	}
+	if fs.NArg() != 0 {
+		// todo: print usage?
+		return flag.ErrHelp
 	}
 	return nil
 }
@@ -33,11 +48,11 @@ func (c *serve) run(ctx context.Context) error {
 	defer cancel()
 
 	s := &http.Server{
-		Addr:        c.addr,
-		Handler:     http.Handler(),
-		BaseContext: func(l net.Listener) context.Context { return ctx },
+		Addr:           c.addr,
+		Handler:        http.Handler(c.rate.N, c.rate.D),
+		BaseContext:    func(l net.Listener) context.Context { return ctx },
+		MaxHeaderBytes: maxHeaderBytes,
 		// todo: timeouts
-		// todo: maxHeaderBytes
 	}
 	s.RegisterOnShutdown(cancel)
 
