@@ -21,11 +21,9 @@ func Handler(burst int, ttl time.Duration) http.Handler {
 
 	handleFunc("GET /ready", handleReady())
 
-	// todo: global handlers
 	// todo: csrf
-	// todo: accept header
-	// todo: throttle?
-	h := LimitHandler(mux, burst, ttl)
+	h := AcceptHandler(mux)
+	h = LimitHandler(mux, burst, ttl) // todo: throttle?
 	h = otelhttp.NewHandler(h, "/")
 	return h
 }
