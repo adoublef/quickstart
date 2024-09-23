@@ -14,7 +14,7 @@ import (
 func Test_LimitHandler(t *testing.T) {
 	// for i in {1..6}; do curl http://localhost:8080/ping; done
 	t.Run("OK", func(t *testing.T) {
-		tc := newLimitClient(1, time.Millisecond*500)
+		tc := newLimitClient(1, 200*time.Millisecond)
 
 		res, err := tc.Get("/ping")
 		is.OK(t, err)
@@ -24,7 +24,7 @@ func Test_LimitHandler(t *testing.T) {
 		is.OK(t, err)
 		is.Equal(t, res.StatusCode, http.StatusTooManyRequests)
 
-		<-time.After(time.Millisecond * 1000) // 1000ms > 500ms (ttl)
+		<-time.After(200 * time.Millisecond)
 
 		res, err = tc.Get("/ping")
 		is.OK(t, err)
