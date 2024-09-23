@@ -2,20 +2,32 @@ package http
 
 import (
 	"net/http"
+	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Server = http.Server
 
 var ErrServerClosed = http.ErrServerClosed
 
-func Handler() http.Handler {
+func Handler(burst int, ttl time.Duration) http.Handler {
 	mux := http.NewServeMux()
 	handleFunc := func(pattern string, h http.Handler) {
+		// todo: set the limit
+		h = otelhttp.WithRouteTag(pattern, h)
 		mux.Handle(pattern, h)
 	}
 
 	handleFunc("GET /ready", handleReady())
-	return mux
+
+	// todo: global handlers
+	// todo: csrf
+	// todo: accept header
+	// todo: throttle?
+	h := LimitHandler(mux, burst, ttl)
+	h = otelhttp.NewHandler(h, "/")
+	return h
 }
 
 // handleReady serves as an endpoint to signal if the service alive.
