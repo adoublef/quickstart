@@ -42,7 +42,7 @@ func AcceptHandler(h http.Handler) http.Handler {
 			h.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
-		debug.Printf("Accepthandler: %q = negotiate.ContentEncoding(r, ce)", encoding)
+		debug.Printf("AcceptHandler: %q = negotiate.ContentEncoding(r, ce)", encoding)
 
 		w.Header().Set("Content-Encoding", encoding)
 		//

@@ -19,11 +19,6 @@ func newTestClient(tb testing.TB, h http.Handler) *TestClient {
 	tb.Helper()
 
 	ts := httptest.NewUnstartedServer(h)
-	// https://developers.cloudflare.com/workers/platform/limits/
-	// https://developers.cloudflare.com/fundamentals/reference/connection-limits/
-	// https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-	// https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/
-	// subject to change
 	// note: the client panics if readTimeout is less than the test timeout
 	// is this a non-issue?
 	ts.Config.ReadTimeout = DefaultReadTimeout

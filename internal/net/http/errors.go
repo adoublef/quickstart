@@ -3,8 +3,6 @@ package http
 import (
 	"fmt"
 	"net/http"
-
-	"go.tmp/quickstart/internal/runtime/debug"
 )
 
 func badRequestError(format string, v ...any) error {
@@ -52,7 +50,6 @@ func (e statusError) Error() string { return http.StatusText(e.code) + ": " + e.
 
 func Error(w http.ResponseWriter, r *http.Request, err error) {
 	if se, ok := err.(statusError); ok {
-		debug.Printf("%s = statusError", se)
 		http.Error(w, se.text, se.code)
 		return
 	}
