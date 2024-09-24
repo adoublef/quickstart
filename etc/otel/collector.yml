@@ -15,7 +15,7 @@ exporters:
       insecure: true
   prometheus:
     endpoint: 0.0.0.0:9090
-    namespace: highland
+    namespace: quickstart
   otlphttp:
     endpoint: http://loki:3100/otlp
     tls:
