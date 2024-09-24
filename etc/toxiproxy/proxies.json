@@ -1,8 +1,1 @@
-[
-  {
-    "name": "otel",
-    "listen": "[::]:4318",
-    "upstream": "otel-collector:4318",
-    "enabled": true
-  }
-]
+[]

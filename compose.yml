@@ -24,7 +24,7 @@ services:
       - OTEL_SERVICE_NAME=quickstart
       - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=staging,service.namespace=x,service.version=0.1,service.instance.id=localhost:8080
       - OTEL_EXPORTER_OTLP_INSECURE=true # use http instead of https (needed because of https://github.com/open-telemetry/opentelemetry-go/issues/4834)
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://toxiproxy:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
     ports:
       - "8080:8080"
@@ -45,7 +45,7 @@ services:
     restart: always
 
   grafana:
-    container_name: quickstart_grafana
+    container_name: quickstart_dash
     image: grafana/grafana-enterprise:11.2.0
     platform: *platform
     environment:

@@ -10,14 +10,14 @@ extensions:
   health_check: {}
 exporters:
   otlp/tempo:
-    endpoint: tempo:4317
+    endpoint: toxiproxy:4317
     tls:
       insecure: true
   prometheus:
     endpoint: 0.0.0.0:9090
     namespace: quickstart
   otlphttp:
-    endpoint: http://loki:3100/otlp
+    endpoint: http://toxiproxy:3100/otlp
     tls:
       insecure: true
   debug:
