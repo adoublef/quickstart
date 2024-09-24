@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
+	. "go.tmp/quickstart/internal/net/http"
 	"go.tmp/quickstart/internal/net/nettest"
 )
 
@@ -19,12 +19,16 @@ func newTestClient(tb testing.TB, h http.Handler) *TestClient {
 	tb.Helper()
 
 	ts := httptest.NewUnstartedServer(h)
-	// subject to change
+	// https://developers.cloudflare.com/workers/platform/limits/
+	// https://developers.cloudflare.com/fundamentals/reference/connection-limits/
 	// https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-	ts.Config.ReadTimeout = 1 * time.Second
-	ts.Config.WriteTimeout = 1 * time.Second
-	ts.Config.IdleTimeout = 30 * time.Second
-	ts.Config.ReadHeaderTimeout = 2 * time.Second
+	// https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/
+	// subject to change
+	// note: the client panics if readTimeout is less than the test timeout
+	// is this a non-issue?
+	ts.Config.ReadTimeout = DefaultReadTimeout
+	ts.Config.WriteTimeout = DefaultWriteTimeout
+	ts.Config.IdleTimeout = DefaultIdleTimeout
 	ts.StartTLS()
 	proxy := nettest.NewProxy(tb.Name(), strings.TrimPrefix(ts.URL, "https://"))
 	tc := nettest.WithTransport(ts.Client(), "https://"+proxy.Listen())
