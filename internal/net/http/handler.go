@@ -24,7 +24,7 @@ func Handler(burst int, ttl time.Duration) http.Handler {
 	// todo: csrf
 	h := AcceptHandler(mux)
 	h = LimitHandler(mux, burst, ttl) // todo: throttle?
-	h = otelhttp.NewHandler(h, "/")
+	h = otelhttp.NewHandler(h, "QuickStart")
 	return h
 }
 
