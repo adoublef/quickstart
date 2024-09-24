@@ -51,8 +51,11 @@ func (c *serve) run(ctx context.Context) error {
 		Addr:           c.addr,
 		Handler:        http.Handler(c.rate.N, c.rate.D),
 		BaseContext:    func(l net.Listener) context.Context { return ctx },
-		MaxHeaderBytes: maxHeaderBytes,
-		// todo: timeouts
+		MaxHeaderBytes: http.DefaultMaxHeaderBytes,
+		// todo: ReadHeaderTimeout uses ReadTimeout if not set
+		ReadTimeout:  http.DefaultReadTimeout,
+		WriteTimeout: http.DefaultWriteTimeout,
+		IdleTimeout:  http.DefaultIdleTimeout,
 	}
 	s.RegisterOnShutdown(cancel)
 
