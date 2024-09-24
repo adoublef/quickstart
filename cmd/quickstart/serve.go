@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -14,11 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Limits as recommended by Cloudflare
-// source: https://developers.cloudflare.com/workers/platform/limits/
-const (
-	maxHeaderBytes = 32 * (1 << 10)
-)
+var cmdServe = &serve{}
 
 type serve struct {
 	addr string
@@ -32,12 +29,21 @@ func (c *serve) parse(args []string, _ func(string) string) error {
 	// Cloudflare sets a 1000/min rate limit default
 	fs.TextVar(&c.rate, "rate", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
 	// throttle safe requests and limit non-safe requests
-	err := fs.Parse(args)
-	if err != nil {
-		return err
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), `
+The serve command initialises and runs a HTTP server.
+
+Usage:
+	%s serve [arguments]
+
+Arguments:
+`[1:], os.Args[0])
+		fs.PrintDefaults()
 	}
-	if fs.NArg() != 0 {
-		// todo: print usage?
+	if err := fs.Parse(args); err != nil {
+		return err
+	} else if fs.NArg() != 0 {
+		fs.Usage()
 		return flag.ErrHelp
 	}
 	return nil
@@ -46,6 +52,12 @@ func (c *serve) parse(args []string, _ func(string) string) error {
 func (c *serve) run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
+
+	// this can be handle by a flag?
+	shutdown, err := setupOTel(ctx)
+	if err != nil {
+		return err
+	}
 
 	s := &http.Server{
 		Addr:           c.addr,
@@ -72,6 +84,14 @@ func (c *serve) run(ctx context.Context) error {
 			return nil
 		}
 		return err
+	})
+
+	eg.Go(func() error {
+		<-ctx.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		return shutdown(ctx)
 	})
 
 	eg.Go(func() error {
