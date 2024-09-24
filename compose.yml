@@ -19,7 +19,7 @@ services:
       platforms:
         - linux/arm64
         - linux/amd64
-    command: ["serve", "-addr=:8080", "-rate=1/60s"]
+    command: ["serve", "-addr=:8080", "-rate=1000/60s"]
     environment:
       - OTEL_SERVICE_NAME=quickstart
       - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=staging,service.namespace=x,service.version=0.1,service.instance.id=localhost:8080
