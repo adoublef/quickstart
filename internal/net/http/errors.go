@@ -5,6 +5,15 @@ import (
 	"net/http"
 )
 
+func Error(w http.ResponseWriter, r *http.Request, err error) {
+	if h, ok := err.(http.Handler); ok {
+		h.ServeHTTP(w, r)
+		return
+	}
+	// do some stuff with domain specific errors
+	http.Error(w, http.StatusText(500), http.StatusInternalServerError)
+}
+
 func badRequestError(format string, v ...any) error {
 	if len(v) > 0 {
 		format = fmt.Sprintf(format, v...)
@@ -48,11 +57,7 @@ type statusError struct {
 
 func (e statusError) Error() string { return http.StatusText(e.code) + ": " + e.text }
 
-func Error(w http.ResponseWriter, r *http.Request, err error) {
-	if se, ok := err.(statusError); ok {
-		http.Error(w, se.text, se.code)
-		return
-	}
-	// do some stuff with domain specific errors
-	http.Error(w, http.StatusText(500), http.StatusInternalServerError)
+func (e statusError) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// check code is > 399
+	http.Error(w, e.text, e.code)
 }

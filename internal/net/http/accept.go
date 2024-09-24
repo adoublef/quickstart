@@ -3,6 +3,7 @@ package http
 import (
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -13,15 +14,20 @@ import (
 const (
 	ContentTypJSON = "application/json"
 	ContentTypHTML = "text/html"
-
-	StatusNotAcceptable = http.StatusNotAcceptable
 )
+
+var notAcceptableHandler = &statusError{
+	http.StatusNotAcceptable,
+	fmt.Sprintf(`
+"Only %q or %q content types supported.",
+`[1:], ContentTypHTML, ContentTypJSON),
+}
 
 // AcceptHandler
 func AcceptHandler(h http.Handler) http.Handler {
 	var (
 		ct = []string{ContentTypJSON, ContentTypHTML}
-		ce = []string{"identity", "gzip" /* "deflate", "zstandard", "zlib" */}
+		ce = []string{"identity", "gzip" /* "deflate", "zstd", "zlib" */}
 	)
 	// note: if we allow compression option
 	// panic if invalid
@@ -30,7 +36,7 @@ func AcceptHandler(h http.Handler) http.Handler {
 
 		accept := httputil.NegotiateContentType(r, ct, "")
 		if accept == "" {
-			w.WriteHeader(StatusNotAcceptable) // todo: [http.Error]
+			notAcceptableHandler.ServeHTTP(w, r)
 			return
 		}
 		debug.Printf("AcceptHandler: %q = httputil.NegotiateContentType(r, ct, _)", accept)
