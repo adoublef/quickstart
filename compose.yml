@@ -70,7 +70,7 @@ services:
       - -host=0.0.0.0 # ?
       - -config=proxies.json
     volumes:
-      - ./etc/toxiproxy/proxies.json:/proxies.json
+      - ./etc/shopify/toxiproxy/proxies.json:/proxies.json
     ports:
       - "8474:8474" # api
       - "4318" # otel
