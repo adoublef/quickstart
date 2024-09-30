@@ -60,6 +60,8 @@ func (c *serve) run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
 
+	// todo: setup tls
+
 	// this can be handle by a flag?
 	shutdown, err := setupOTel(ctx)
 	if err != nil {
@@ -75,6 +77,7 @@ func (c *serve) run(ctx context.Context) error {
 		ReadTimeout:  c.readTimeout,
 		WriteTimeout: c.writeTimeout,
 		IdleTimeout:  c.idleTimeout,
+		// TLSConfig:    tlsConfig,
 	}
 	s.RegisterOnShutdown(cancel)
 
