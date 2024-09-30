@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"go.tmp/quickstart/internal/runtime/debug"
 	"golang.org/x/time/rate"
 )
 
@@ -34,6 +35,7 @@ func LimitHandler(h http.Handler, burst int, ttl time.Duration) http.Handler {
 			tooManyRequestsHandler.ServeHTTP(w, r)
 			return
 		}
+		defer debug.Printf("LimitHandler: %0.f = l.Tokens()", l.Tokens())
 		h.ServeHTTP(w, r)
 	})
 }
