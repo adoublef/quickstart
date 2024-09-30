@@ -61,6 +61,9 @@ func (c *serve) run(ctx context.Context) error {
 	defer cancel()
 
 	// todo: setup tls
+	// if (err != nil) then issue with config
+	// if (!ok) then tlsConfg == nil
+	// tlsConfig, ok, err
 
 	// this can be handle by a flag?
 	shutdown, err := setupOTel(ctx)
