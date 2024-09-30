@@ -25,9 +25,9 @@ type serve struct {
 
 func (c *serve) parse(args []string, _ func(string) string) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
-	fs.StringVar(&c.addr, "addr", "0.0.0.0:0", "http listening port")
+	fs.StringVar(&c.addr, "address", "0.0.0.0:0", "http listening port")
 	// Cloudflare sets a 1000/min rate limit default
-	fs.TextVar(&c.rate, "rate", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
+	fs.TextVar(&c.rate, "rate-limit", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
 	// throttle safe requests and limit non-safe requests
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), `

@@ -19,7 +19,7 @@ func Test_serve_parse(t *testing.T) {
 
 	var tt = map[string]testcase{
 		"OKRate": {
-			in: []string{"-rate", "1/10s"},
+			in: []string{"-rate-limit", "1/10s"},
 		},
 		"ErrTooManyArgs": {
 			in:   []string{"never"},
@@ -38,7 +38,7 @@ func Test_serve_run(t *testing.T) {
 	t.Run("OKGracefulShutdown", func(t *testing.T) {
 		var s serve
 		// random port?
-		err := s.parse([]string{"-addr", ":8080"}, nil)
+		err := s.parse([]string{"-address", ":8080"}, nil)
 		is.OK(t, err)
 		// cancellable context is needed
 		ctx, cancel := context.WithCancel(context.Background())
