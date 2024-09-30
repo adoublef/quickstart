@@ -1,7 +1,6 @@
 package http
 
 import (
-	"crypto/tls"
 	"net/http"
 	"sync"
 	"time"
@@ -39,16 +38,10 @@ func handleReady() http.HandlerFunc {
 		err  error
 	)
 	return func(w http.ResponseWriter, r *http.Request) {
-		// make a https request
+		// 1. make a https request
+		// 1. correct time
 		once.Do(func() {
-			var c = &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: false,
-					},
-				},
-			}
-			_, err = c.Get("https://google.com")
+			_, err = http.Get("https://google.com")
 			debug.Printf("handleReady: _, %v = http.Get(_)", err)
 		})
 		if err != nil {

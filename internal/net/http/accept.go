@@ -39,7 +39,7 @@ func AcceptHandler(h http.Handler) http.Handler {
 			notAcceptableHandler.ServeHTTP(w, r)
 			return
 		}
-		debug.Printf("AcceptHandler: %q = httputil.NegotiateContentType(r, ct, _)", accept)
+		defer debug.Printf("AcceptHandler: %q = httputil.NegotiateContentType(r, ct, _)", accept)
 
 		ctx = context.WithValue(ctx, ContentTypOfferKey, accept)
 		encoding := httputil.NegotiateContentEncoding(r, ce)
@@ -48,7 +48,7 @@ func AcceptHandler(h http.Handler) http.Handler {
 			h.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
-		debug.Printf("AcceptHandler: %q = negotiate.ContentEncoding(r, ce)", encoding)
+		defer debug.Printf("AcceptHandler: %q = negotiate.ContentEncoding(r, ce)", encoding)
 
 		w.Header().Set("Content-Encoding", encoding)
 		//
