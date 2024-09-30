@@ -26,6 +26,7 @@ func Test_serve_parse(t *testing.T) {
 			want: flag.ErrHelp,
 		},
 	}
+
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
 			err := (&serve{}).parse(tc.in, nil)

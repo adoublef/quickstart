@@ -10,12 +10,17 @@ import (
 )
 
 // ForHTTP
-func ForHTTP(ctx context.Context, timeout time.Duration, endpoint string) error {
+func ForHTTP(ctx context.Context, timeout time.Duration, endpoint string, opts ...func(*http.Request)) error {
 	c := &http.Client{}
 	o := func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 		if err != nil {
 			return fmt.Errorf("failed to create request: %w", err)
+		}
+		// defaults added to request
+		req.Header.Set("Accept", "*/*")
+		for _, o := range opts {
+			o(req)
 		}
 		res, err := c.Do(req)
 		if err != nil {
