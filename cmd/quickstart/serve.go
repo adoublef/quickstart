@@ -18,17 +18,24 @@ import (
 var cmdServe = &serve{}
 
 type serve struct {
-	addr string
-	rate rate.Rate
+	addr                                   string
+	rate                                   rate.Rate
+	readTimeout, writeTimeout, idleTimeout time.Duration
+	maxHeaderBytes                         int
 	// todo: tls
 }
 
 func (c *serve) parse(args []string, _ func(string) string) error {
+	// note: https://grafana.com/docs/agent/latest/static/configuration/flags/
+	// note: https://clig.dev/#arguments-and-flags
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	fs.StringVar(&c.addr, "address", "0.0.0.0:0", "http listening port")
-	// Cloudflare sets a 1000/min rate limit default
-	fs.TextVar(&c.rate, "rate-limit", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
 	// throttle safe requests and limit non-safe requests
+	fs.TextVar(&c.rate, "rate-limit", rate.Rate{N: 1000, D: time.Minute}, "api rate limit")
+	fs.IntVar(&c.maxHeaderBytes, "max-header-bytes", http.DefaultMaxHeaderBytes, "max request header size in bytes")
+	fs.DurationVar(&c.readTimeout, "read-timeout", http.DefaultReadTimeout, "max duration for reading request body")
+	fs.DurationVar(&c.writeTimeout, "write-timeout", http.DefaultWriteTimeout, "max duration for writing response")
+	fs.DurationVar(&c.idleTimeout, "idle-timeout", http.DefaultIdleTimeout, "max idle time between requests")
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), `
 The serve command initialises and runs a HTTP server.
@@ -63,11 +70,11 @@ func (c *serve) run(ctx context.Context) error {
 		Addr:           c.addr,
 		Handler:        http.Handler(c.rate.N, c.rate.D),
 		BaseContext:    func(l net.Listener) context.Context { return ctx },
-		MaxHeaderBytes: http.DefaultMaxHeaderBytes,
+		MaxHeaderBytes: c.maxHeaderBytes,
 		// todo: ReadHeaderTimeout uses ReadTimeout if not set
-		ReadTimeout:  http.DefaultReadTimeout,
-		WriteTimeout: http.DefaultWriteTimeout,
-		IdleTimeout:  http.DefaultIdleTimeout,
+		ReadTimeout:  c.readTimeout,
+		WriteTimeout: c.writeTimeout,
+		IdleTimeout:  c.idleTimeout,
 	}
 	s.RegisterOnShutdown(cancel)
 
